@@ -1,6 +1,9 @@
-# Swagger generated server
+# Todo List micro-service
 
-Spring Boot Server 
+Experimental implementation of a Todo List restful service that uses:
+1. Swagger generated Java Spring controllers
+2. Kotlin for the service/business logic 
+3. TinkerGraph as embedded in-memory database
 
 
 ## Overview  
@@ -10,7 +13,9 @@ This is an example of building a swagger-enabled server in Java using the Spring
 
 The underlying library integrating swagger to SpringBoot is [springfox](https://github.com/springfox/springfox)  
 
-Start your server as an simple java application  
+Start your server as an simple java application
+
+`./gradlew bootRun`
 
 You can view the api documentation in swagger-ui by pointing to  
 http://localhost:8080/  
