@@ -39,7 +39,7 @@ public interface ListApi {
     ResponseEntity<Void> addTask(@ApiParam(value = "Unique identifier of the list to add the task for",required=true) @PathVariable("id") UUID id,@ApiParam(value = "task to add"  )  @Valid @RequestBody Task task);
 
 
-    @ApiOperation(value = "return the specified todo list", nickname = "getList", notes = "", response = TodoList.class, tags={ "todo", })
+    @ApiOperation(value = "return the specified todo list", nickname = "getTodoList", notes = "", response = TodoList.class, tags={ "todo", })
     @ApiResponses(value = { 
         @ApiResponse(code = 200, message = "successful operation", response = TodoList.class),
         @ApiResponse(code = 400, message = "Invalid id supplied"),

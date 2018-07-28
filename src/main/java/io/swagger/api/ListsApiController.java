@@ -3,8 +3,10 @@ package io.swagger.api;
 import io.swagger.model.TodoList;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
+import io.swagger.service.TodoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,6 +32,9 @@ public class ListsApiController implements ListsApi {
 
     private final HttpServletRequest request;
 
+    @Autowired
+    private TodoService todoService;
+
     @org.springframework.beans.factory.annotation.Autowired
     public ListsApiController(ObjectMapper objectMapper, HttpServletRequest request) {
         this.objectMapper = objectMapper;
@@ -38,16 +43,26 @@ public class ListsApiController implements ListsApi {
 
     public ResponseEntity<Void> addList(@ApiParam(value = "ToDo list to add"  )  @Valid @RequestBody TodoList todoList) {
         String accept = request.getHeader("Accept");
-        return new ResponseEntity<Void>(HttpStatus.NOT_IMPLEMENTED);
+        if (todoService.existsTodoList(todoList.getId())){
+            return new ResponseEntity<Void>(HttpStatus.CONFLICT);
+        }else {
+            todoService.upsertTodoList(todoList);
+            return new ResponseEntity<Void>(HttpStatus.CREATED);
+        }
     }
 
-    public ResponseEntity<List<TodoList>> searchLists(@ApiParam(value = "pass an optional search string for looking up a list") @Valid @RequestParam(value = "searchString", required = false) String searchString,@Min(0)@ApiParam(value = "number of records to skip for pagination") @Valid @RequestParam(value = "skip", required = false) Integer skip,@Min(0) @Max(50) @ApiParam(value = "maximum number of records to return") @Valid @RequestParam(value = "limit", required = false) Integer limit) {
+    public ResponseEntity<List<TodoList>> searchLists(@ApiParam(value = "pass an optional search string for looking up a list") @Valid @RequestParam(value = "searchString", required = false) String searchString,@Min(0)@ApiParam(value = "number of records to skip for pagination") @Valid @RequestParam(value = "skip", required = false, defaultValue = "0") Integer skip,@Min(0) @Max(50) @ApiParam(value = "maximum number of records to return") @Valid @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
-                return new ResponseEntity<List<TodoList>>(objectMapper.readValue("[ {  \"name\" : \"Home\",  \"description\" : \"The list of things that need to be done at home\n\",  \"id\" : \"d290f1ee-6c54-4b01-90e6-d701748f0851\",  \"tasks\" : [ {    \"name\" : \"mow the yard\",    \"id\" : \"0e2ac84f-f723-4f24-878b-44e63e7ae580\",    \"completed\" : true  }, {    \"name\" : \"mow the yard\",    \"id\" : \"0e2ac84f-f723-4f24-878b-44e63e7ae580\",    \"completed\" : true  } ]}, {  \"name\" : \"Home\",  \"description\" : \"The list of things that need to be done at home\n\",  \"id\" : \"d290f1ee-6c54-4b01-90e6-d701748f0851\",  \"tasks\" : [ {    \"name\" : \"mow the yard\",    \"id\" : \"0e2ac84f-f723-4f24-878b-44e63e7ae580\",    \"completed\" : true  }, {    \"name\" : \"mow the yard\",    \"id\" : \"0e2ac84f-f723-4f24-878b-44e63e7ae580\",    \"completed\" : true  } ]} ]", List.class), HttpStatus.NOT_IMPLEMENTED);
-            } catch (IOException e) {
-                log.error("Couldn't serialize response for content type application/json", e);
+                if (searchString != null) {
+                    List<TodoList> result = todoService.list(searchString,skip,limit);
+                    return new ResponseEntity<>(result, HttpStatus.OK);
+                }else {
+                    List<TodoList> result = todoService.list(skip,limit);
+                    return new ResponseEntity<>(result, HttpStatus.OK);
+                }
+            } catch (Exception e) {
                 return new ResponseEntity<List<TodoList>>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
