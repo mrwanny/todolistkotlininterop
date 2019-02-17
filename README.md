@@ -1,4 +1,4 @@
-# Todo List micro-service
+# Todo List micro-service 
 
 Experimental implementation of a Todo List restful service that uses:
 1. Swagger generated Java Spring controllers
